@@ -15,7 +15,10 @@ const KEY_PATH =
 
 const app = express();
 
-const distDir = path.join(__dirname, '..', 'dist', 'topaz-demo');
+const distRootDir = path.join(__dirname, '..', 'dist', 'topaz-demo');
+const distBrowserDir = path.join(distRootDir, 'browser');
+
+const distDir = fs.existsSync(path.join(distBrowserDir, 'index.html')) ? distBrowserDir : distRootDir;
 const indexHtmlPath = path.join(distDir, 'index.html');
 const hasBuiltApp = fs.existsSync(indexHtmlPath);
 
