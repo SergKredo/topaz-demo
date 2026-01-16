@@ -42,3 +42,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Local HTTPS bridge certs (do not commit private keys)
+/bridge/certs/*.pem
+/bridge/certs/*.key
+/bridge/certs/*.crt
