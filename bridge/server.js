@@ -8,6 +8,11 @@ const fs = require('fs');
 const SIGWEB_TARGET = process.env.SIGWEB_TARGET || 'http://localhost:47289';
 const PORT = Number(process.env.BRIDGE_PORT || 9443);
 
+const CERT_PATH =
+	process.env.BRIDGE_CERT_PATH || path.join(__dirname, 'certs', 'localhost-cert.pem');
+const KEY_PATH =
+	process.env.BRIDGE_KEY_PATH || path.join(__dirname, 'certs', 'localhost-key.pem');
+
 const app = express();
 
 const distDir = path.join(__dirname, '..', 'dist', 'topaz-demo');
@@ -107,28 +112,38 @@ app.use(
 	})
 );
 
-const pems = selfsigned.generate(
-	[
-		{ name: 'commonName', value: 'localhost' },
-		{ name: 'organizationName', value: 'Topaz Demo Local Bridge' }
-	],
-	{
-		days: 365,
-		keySize: 2048,
-		algorithm: 'sha256',
-		extensions: [
-			{
-				name: 'subjectAltName',
-				altNames: [
-					{ type: 2, value: 'localhost' },
-					{ type: 7, ip: '127.0.0.1' }
-				]
-			}
-		]
-	}
-);
+let cert;
+let key;
 
-const server = https.createServer({ key: pems.private, cert: pems.cert }, app);
+if (fs.existsSync(CERT_PATH) && fs.existsSync(KEY_PATH)) {
+	cert = fs.readFileSync(CERT_PATH);
+	key = fs.readFileSync(KEY_PATH);
+} else {
+	const pems = selfsigned.generate(
+		[
+			{ name: 'commonName', value: 'localhost' },
+			{ name: 'organizationName', value: 'Topaz Demo Local Bridge' }
+		],
+		{
+			days: 365,
+			keySize: 2048,
+			algorithm: 'sha256',
+			extensions: [
+				{
+					name: 'subjectAltName',
+					altNames: [
+						{ type: 2, value: 'localhost' },
+						{ type: 7, ip: '127.0.0.1' }
+					]
+				}
+			]
+		}
+	);
+	cert = pems.cert;
+	key = pems.private;
+}
+
+const server = https.createServer({ key, cert }, app);
 
 server.on('error', (err) => {
 	if (err && err.code === 'EADDRINUSE') {

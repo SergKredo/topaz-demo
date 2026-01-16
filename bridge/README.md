@@ -35,7 +35,22 @@ which proxies to:
 - `http://localhost:47289/sigweb/...` (SigWeb)
 
 ## Notes
-- The bridge uses a self-signed certificate generated at runtime. You must approve it in the browser once.
+- By default the bridge uses a self-signed certificate generated at runtime, so Chrome will show `ERR_CERT_AUTHORITY_INVALID`.
+- To remove the warning, use a locally trusted development certificate (recommended: `mkcert`).
+
+### Make Chrome trust the bridge (recommended)
+1) Install `mkcert` (one-time): https://github.com/FiloSottile/mkcert
+2) Install a local dev root CA (one-time):
+   - `mkcert -install`
+3) Generate a cert for localhost and save it into `bridge/certs/`:
+   - `mkcert -key-file bridge/certs/localhost-key.pem -cert-file bridge/certs/localhost-cert.pem localhost 127.0.0.1 ::1`
+4) Restart the bridge.
+
+The bridge will automatically use `bridge/certs/localhost-cert.pem` + `bridge/certs/localhost-key.pem` if they exist.
+
+You can also override paths via env vars:
+- `set BRIDGE_CERT_PATH=C:\path\to\cert.pem`
+- `set BRIDGE_KEY_PATH=C:\path\to\key.pem`
 - You can change the bridge port:
   - `set BRIDGE_PORT=9443`
 - You can change the SigWeb target:

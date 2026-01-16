@@ -130,6 +130,9 @@
 							<li><a href="https://github.com/SergKredo/topaz-demo/releases" target="_blank" rel="noopener noreferrer">Download Topaz Demo Bridge (EXE) from GitHub Releases</a></li>
 							<li>Run the EXE (starts <code>https://localhost:9443</code>), then open <code>https://localhost:9443/</code> once to approve the certificate.</li>
 						</ul>
+						If Chrome shows <code>ERR_CERT_AUTHORITY_INVALID</code>, this is expected with a self-signed cert. To remove the warning, create a locally trusted cert
+						(e.g. via <a href="https://github.com/FiloSottile/mkcert" target="_blank" rel="noopener noreferrer">mkcert</a>) and place it in <code>bridge/certs</code>
+						(see <a href="https://github.com/SergKredo/topaz-demo/tree/main/bridge" target="_blank" rel="noopener noreferrer">bridge/README.md</a>).
 						Bridge details (source + troubleshooting):
 						<a href="https://github.com/SergKredo/topaz-demo/tree/main/bridge" target="_blank" rel="noopener noreferrer">bridge/README.md</a>
 						Then the deployed site will call <code>https://localhost:9443/sigweb</code> (bridge) → <code>http://localhost:47289/sigweb</code> (SigWeb).
