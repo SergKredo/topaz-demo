@@ -1,59 +1,69 @@
-# TopazDemo
+# Topaz Signature Demo (SigWeb)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
+This is a small Angular demo that talks to the Topaz **SigWeb** local REST host.
 
-## Development server
+Live site (UI): https://sergkredo.github.io/topaz-demo/
 
-To start a local development server, run:
+## Prerequisites (Windows)
 
-```bash
-ng serve
+1) Install and start SigWeb
+- SigWeb REST host base URL: `http://localhost:47289/sigweb`
+- Quick checks:
+	- `http://localhost:47289/sigweb/version`
+	- `http://localhost:47289/sigweb/TabletConnectQuery`
+
+Official downloads (Topaz Systems)
+- SigWeb SDK page: https://topazsystems.com/sdks/sigweb.html
+- SigWeb installer: https://www.topazsystems.com/software/sigweb.exe
+- SigWeb certificate installer: https://topazsystems.com/software/sigwebcertinstaller.exe
+
+2) Install drivers for your specific tablet model (if needed)
+- SigPlus drivers & installers: https://www.sigpluspro.com/
+
+## How to run the demo
+
+### Option A: Local dev (HTTP) — simplest
+
+This is the original local flow and works well with SigWeb because everything is HTTP on localhost.
+
+```powershell
+npm install
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open: `http://localhost:4200/`
 
-## Code scaffolding
+### Option B: Use the deployed site (GitHub Pages HTTPS) + local bridge
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Browsers block calls from an HTTPS page to `http://localhost` (mixed content), and SigWeb is usually HTTP-only on port `47289`.
+To make the deployed site work with local SigWeb, run a local HTTPS bridge on `https://localhost:9443`.
 
-```bash
-ng generate component component-name
+From this repo:
+
+```powershell
+npm install
+npm run demo:https
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Then:
+- Open `https://localhost:9443/` once and approve the certificate warning
+- Open `https://sergkredo.github.io/topaz-demo/`
 
-```bash
-ng generate --help
+More details: bridge/README.md
+
+## Bridge executable (for end users without the repo)
+
+End users cannot run `npm run demo:https` without the project folder.
+For distribution, you can ship a standalone Windows EXE for the bridge.
+
+Build on your machine:
+
+```powershell
+npm install
+npm run bridge:build-exe
 ```
 
-## Building
+Output:
+- `bridge/dist/topaz-demo-bridge.exe`
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+You can publish this EXE via GitHub Releases and link users to it.
