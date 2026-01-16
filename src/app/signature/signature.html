@@ -1,0 +1,281 @@
+<div class="page">
+	<div class="page-header">
+		<h1 class="title">Topaz Signature Demo</h1>
+	</div>
+
+	<div class="grid">
+		<section class="card">
+			<h2 class="card-title">Status</h2>
+			<div class="kv">SigWeb version: <span class="mono">{{ topaz.version() ?? '—' }}</span></div>
+			<div class="kv">
+				Tablet connected:
+				<span class="mono">{{ topaz.tabletConnected() === null ? '—' : (topaz.tabletConnected() ? 'Yes' : 'No') }}</span>
+			</div>
+			<div class="kv" *ngIf="topaz.lastAction()">Last action: <span class="mono">{{ topaz.lastAction() }}</span></div>
+			<div class="kv prewrap" *ngIf="topaz.lastError()">Error: <span class="mono">{{ topaz.lastError() }}</span></div>
+			<div class="hint">
+				Steps: 1) Click Start 2) Sign on the tablet 3) Click Save to show image.
+			</div>
+		</section>
+
+		<section class="card">
+			<h2 class="card-title">Capture</h2>
+			<div class="actions">
+				<button class="btn btn-primary" type="button" (click)="start()">Start</button>
+				<button class="btn" type="button" (click)="clear()">Clear</button>
+				<button class="btn" type="button" (click)="save()">Save</button>
+			</div>
+			<div class="signature-preview">
+				<img *ngIf="signatureImage" [src]="signatureImage" />
+			</div>
+		</section>
+	</div>
+
+	<section class="card">
+		<h2 class="card-title">SigWeb REST API (reference)</h2>
+		<div class="stack">
+			<div class="kv"><b>Base URL:</b> <code>{{ topaz.baseUrl }}</code></div>
+			<div>
+				<b>Typical flow:</b>
+				<code>Start</code> → sign on the tablet → <code>Save</code> (fetch image) → <code>Clear</code>.
+			</div>
+			<div>
+				<b>HTTP rules:</b>
+				most “read” endpoints are <code>GET</code>; many “command” endpoints require <code>POST</code> and a non-empty
+				body (so the request has <code>Content-Length</code>, e.g. <code>x=</code>).
+			</div>
+			<div>
+				<b>Important:</b>
+				SigWeb must detect the device (see <code>/TabletConnectQuery</code>). If it returns <code>0</code>, capture/image
+				endpoints may return empty results.
+			</div>
+		</div>
+
+		<div class="divider"></div>
+
+		<h3 class="section-title">Verified endpoints (this demo uses)</h3>
+<div *ngFor="let item of apiDocs">
+	<div *ngIf="item.group === 'Verified endpoints (this demo uses)'"><button type="button" class="api-link" (click)="toggleApiDetails(item.id)"><code>{{ item.method }} {{ item.path }}</code> — {{ item.short }}</button></div>
+	<div *ngIf="expandedApiId === item.id" class="api-details">
+		<div *ngIf="item.purpose.length">
+			<b>What it does:</b>
+			<ul>
+				<li *ngFor="let line of item.purpose">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.params?.length">
+			<b>Parameters:</b>
+			<ul>
+				<li *ngFor="let p of item.params"><code>{{ p.location }}</code> <code>{{ p.name }}</code> — {{ p.meaning }}<span *ngIf="p.example"> (e.g. <code>{{ p.example }}</code>)</span></li>
+			</ul>
+		</div>
+		<div *ngIf="item.requestBody?.length">
+			<b>Request body:</b>
+			<ul>
+				<li *ngFor="let line of item.requestBody">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.response?.length">
+			<b>Response:</b>
+			<ul>
+				<li *ngFor="let line of item.response">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.notes?.length">
+			<b>Notes:</b>
+			<ul>
+				<li *ngFor="let line of item.notes">{{ line }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<div class="divider"></div>
+
+		<h3 class="section-title">More available endpoints (from installed SigWeb REST host)</h3>
+<div>
+	The list below is extracted from the local SigWeb installation. Availability and exact URL shape can vary by
+	version/device/configuration.
+</div>
+
+		<h4 class="section-subtitle">Tablet / capture</h4>
+<div *ngFor="let item of apiDocs">
+	<div *ngIf="item.group === 'Tablet / capture'"><button type="button" class="api-link" (click)="toggleApiDetails(item.id)"><code>{{ item.method }} {{ item.path }}</code> — {{ item.short }}</button></div>
+	<div *ngIf="expandedApiId === item.id" class="api-details">
+		<div *ngIf="item.purpose.length">
+			<b>What it does:</b>
+			<ul>
+				<li *ngFor="let line of item.purpose">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.params?.length">
+			<b>Parameters:</b>
+			<ul>
+				<li *ngFor="let p of item.params"><code>{{ p.location }}</code> <code>{{ p.name }}</code> — {{ p.meaning }}<span *ngIf="p.example"> (e.g. <code>{{ p.example }}</code>)</span></li>
+			</ul>
+		</div>
+		<div *ngIf="item.requestBody?.length">
+			<b>Request body:</b>
+			<ul>
+				<li *ngFor="let line of item.requestBody">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.response?.length">
+			<b>Response:</b>
+			<ul>
+				<li *ngFor="let line of item.response">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.notes?.length">
+			<b>Notes:</b>
+			<ul>
+				<li *ngFor="let line of item.notes">{{ line }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+		<h4 class="section-subtitle">Signature data</h4>
+<div *ngFor="let item of apiDocs">
+	<div *ngIf="item.group === 'Signature data'"><button type="button" class="api-link" (click)="toggleApiDetails(item.id)"><code>{{ item.method }} {{ item.path }}</code> — {{ item.short }}</button></div>
+	<div *ngIf="expandedApiId === item.id" class="api-details">
+		<div *ngIf="item.purpose.length">
+			<b>What it does:</b>
+			<ul>
+				<li *ngFor="let line of item.purpose">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.params?.length">
+			<b>Parameters:</b>
+			<ul>
+				<li *ngFor="let p of item.params"><code>{{ p.location }}</code> <code>{{ p.name }}</code> — {{ p.meaning }}<span *ngIf="p.example"> (e.g. <code>{{ p.example }}</code>)</span></li>
+			</ul>
+		</div>
+		<div *ngIf="item.requestBody?.length">
+			<b>Request body:</b>
+			<ul>
+				<li *ngFor="let line of item.requestBody">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.response?.length">
+			<b>Response:</b>
+			<ul>
+				<li *ngFor="let line of item.response">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.notes?.length">
+			<b>Notes:</b>
+			<ul>
+				<li *ngFor="let line of item.notes">{{ line }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+		<h4 class="section-subtitle">LCD (for LCD-capable tablets)</h4>
+<div *ngFor="let item of apiDocs">
+	<div *ngIf="item.group === 'LCD (for LCD-capable tablets)'"><button type="button" class="api-link" (click)="toggleApiDetails(item.id)"><code>{{ item.method }} {{ item.path }}</code> — {{ item.short }}</button></div>
+	<div *ngIf="expandedApiId === item.id" class="api-details">
+		<div *ngIf="item.purpose.length">
+			<b>What it does:</b>
+			<ul>
+				<li *ngFor="let line of item.purpose">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.params?.length">
+			<b>Parameters:</b>
+			<ul>
+				<li *ngFor="let p of item.params"><code>{{ p.location }}</code> <code>{{ p.name }}</code> — {{ p.meaning }}<span *ngIf="p.example"> (e.g. <code>{{ p.example }}</code>)</span></li>
+			</ul>
+		</div>
+		<div *ngIf="item.requestBody?.length">
+			<b>Request body:</b>
+			<ul>
+				<li *ngFor="let line of item.requestBody">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.response?.length">
+			<b>Response:</b>
+			<ul>
+				<li *ngFor="let line of item.response">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.notes?.length">
+			<b>Notes:</b>
+			<ul>
+				<li *ngFor="let line of item.notes">{{ line }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+		<h4 class="section-subtitle">Device configuration</h4>
+<div *ngFor="let item of apiDocs">
+	<div *ngIf="item.group === 'Device configuration'"><button type="button" class="api-link" (click)="toggleApiDetails(item.id)"><code>{{ item.method }} {{ item.path }}</code> — {{ item.short }}</button></div>
+	<div *ngIf="expandedApiId === item.id" class="api-details">
+		<div *ngIf="item.purpose.length">
+			<b>What it does:</b>
+			<ul>
+				<li *ngFor="let line of item.purpose">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.params?.length">
+			<b>Parameters:</b>
+			<ul>
+				<li *ngFor="let p of item.params"><code>{{ p.location }}</code> <code>{{ p.name }}</code> — {{ p.meaning }}<span *ngIf="p.example"> (e.g. <code>{{ p.example }}</code>)</span></li>
+			</ul>
+		</div>
+		<div *ngIf="item.requestBody?.length">
+			<b>Request body:</b>
+			<ul>
+				<li *ngFor="let line of item.requestBody">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.response?.length">
+			<b>Response:</b>
+			<ul>
+				<li *ngFor="let line of item.response">{{ line }}</li>
+			</ul>
+		</div>
+		<div *ngIf="item.notes?.length">
+			<b>Notes:</b>
+			<ul>
+				<li *ngFor="let line of item.notes">{{ line }}</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+		<h4 class="section-subtitle">Full extracted path list (raw)</h4>
+<div>
+	<div *ngFor="let group of rawApiGroups">
+		<h5 class="group-title">{{ group.name }}</h5>
+		<div *ngFor="let item of group.items">
+			<div>
+				<button type="button" class="api-link" (click)="toggleRawApiDetails(item.key)">
+					<code>{{ item.methodGuess }} {{ item.path }}</code>
+					<span *ngIf="item.suffix"> (flag <code>{{ item.suffix }}</code>)</span>
+					— {{ item.short }}
+				</button>
+			</div>
+			<div *ngIf="expandedRawApiKey === item.key" class="api-details">
+				<div><b>Raw token:</b> <code>{{ item.raw }}</code></div>
+				<div><b>Call URL:</b> <code>{{ topaz.baseUrl }}{{ item.path }}</code></div>
+				<div *ngIf="item.params.length">
+					<b>Path parameters:</b>
+					<ul>
+						<li *ngFor="let p of item.params"><code>{{ p }}</code> — replace in the URL path (example: <code>/.../{{ p }}/...</code>).</li>
+					</ul>
+				</div>
+				<div *ngIf="item.notes.length">
+					<b>Notes:</b>
+					<ul>
+						<li *ngFor="let n of item.notes">{{ n }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	</section>
+</div>
