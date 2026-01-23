@@ -7,14 +7,6 @@
 		<section class="card">
 			<h2 class="card-title">Status</h2>
 			<div class="kv">SigWeb version: <span class="mono">{{ topaz.version() ?? '—' }}</span></div>
-			<div class="kv" *ngIf="topaz.isHttpsPage">
-				Local HTTPS bridge ({{ topaz.bridgeOriginForDisplay }}):
-				<span class="mono">{{ topaz.bridgeDetected() === null ? '—' : (topaz.bridgeDetected() ? 'Detected' : 'Not detected') }}</span>
-			</div>
-			<div class="kv prewrap" *ngIf="topaz.isHttpsPage && topaz.bridgeDetected() === false">
-				Hint: start it with <span class="mono">npm run demo:https</span> and open
-				<span class="mono">{{ topaz.bridgeOriginForDisplay }}/</span> once to approve the certificate.
-			</div>
 			<div class="kv">
 				Tablet connected:
 				<span class="mono">{{ topaz.tabletConnected() === null ? '—' : (topaz.tabletConnected() ? 'Yes' : 'No') }}</span>
@@ -41,113 +33,6 @@
 
 	<section class="card">
 		<h2 class="card-title">SigWeb REST API (reference)</h2>
-
-		<h3 class="section-title">Prerequisites (Topaz setup for this demo)</h3>
-		<div class="stack">
-			<div>
-				This demo talks to the local SigWeb REST host on <code>http://localhost:47289/sigweb</code>.
-				To make it work, install and start SigWeb on the same Windows PC where you open this site.
-			</div>
-
-			<div>
-				<b>Official downloads (Topaz Systems)</b>
-				<ul>
-					<li><a href="https://topazsystems.com/sdks/sigweb.html" target="_blank" rel="noopener noreferrer">SigWeb SDK page (overview + links)</a></li>
-					<li><a href="https://www.topazsystems.com/software/sigweb.exe" target="_blank" rel="noopener noreferrer">SigWeb installer (sigweb.exe)</a></li>
-					<li>
-						SigWeb certificate installer:
-						<a href="https://topazsystems.com/software/sigwebcertinstaller.exe" target="_blank" rel="noopener noreferrer">EXE</a>
-						/
-						<a href="https://topazsystems.com/software/sigwebcertinstaller.zip" target="_blank" rel="noopener noreferrer">ZIP</a>
-					</li>
-					<li><a href="https://www.topazsystems.com/Software/sigweb_install.pdf" target="_blank" rel="noopener noreferrer">SigWeb Installation Help Guide (PDF)</a></li>
-					<li><a href="https://www.topazsystems.com/Software/download/sigweb.pdf" target="_blank" rel="noopener noreferrer">SigWeb Developer Guide (PDF)</a></li>
-					<li><a href="https://www.topazsystems.com/software/SigWeb_Test_Utility.exe" target="_blank" rel="noopener noreferrer">SigWeb Test Utility</a></li>
-					<li><a href="https://www.sigplusweb.com/SigWebTablet.js" target="_blank" rel="noopener noreferrer">SigWebTablet.js (sigplusweb.com)</a></li>
-					<li><a href="https://topazsystems.com/software/" target="_blank" rel="noopener noreferrer">Topaz software downloads hub</a></li>
-				</ul>
-			</div>
-
-			<div>
-				<b>1) Install SigWeb</b>
-				<ul>
-					<li>Install <b>Topaz SigWeb</b> (from the official Topaz Systems installer).</li>
-					<li>Make sure the REST host component is installed (SigWeb REST host / SigRESTHost).</li>
-					<li>After install, confirm the SigWeb host is running and listening on port <code>47289</code> (HTTP).</li>
-				</ul>
-			</div>
-
-			<div>
-				<b>2) Connect the tablet + drivers</b>
-				<ul>
-					<li>Connect the Topaz tablet via USB (or serial, depending on your model).</li>
-					<li>If Windows does not recognize the device, install the official Topaz drivers for your model.</li>
-					<li>
-						<a href="https://www.sigpluspro.com/" target="_blank" rel="noopener noreferrer">SigPlus drivers & installers (official)</a>
-						— select your specific tablet model/device to download the correct driver.
-					</li>
-					<li>Unplug/replug the tablet after driver installation.</li>
-				</ul>
-			</div>
-
-			<div>
-				<b>3) Verify SigWeb is reachable (quick checks)</b>
-				<ul>
-					<li>Open: <code>http://localhost:47289/sigweb/version</code> (should return a version string).</li>
-					<li>Open: <code>http://localhost:47289/sigweb/TabletConnectQuery</code> (should return <code>1</code> when a tablet is detected).</li>
-					<li>If it returns <code>0</code>, SigWeb does not see the tablet yet (check cable/driver/device settings).</li>
-				</ul>
-			</div>
-
-			<div>
-				<b>4) Firewall / permissions</b>
-				<ul>
-					<li>Allow local HTTP access to port <code>47289</code> for the SigWeb host in Windows Firewall (if blocked).</li>
-					<li>Run the installer as Administrator if the service fails to register/start.</li>
-				</ul>
-			</div>
-
-			<div>
-				<b>5) Notes</b>
-				<ul>
-					<li>This demo uses <code>localhost</code>, so SigWeb must run on the same machine as your browser.</li>
-					<li>
-						If you open this demo from GitHub Pages (HTTPS), the browser blocks calls to <code>http://localhost</code>
-						(mixed content). SigWeb is also typically HTTP-only on port <code>47289</code>, so <code>https://localhost:47289</code>
-						may fail with <code>ERR_SSL_PROTOCOL_ERROR</code>.
-					</li>
-					<li>
-						To use the deployed demo (<code>https://sergkredo.github.io/topaz-demo/</code>) with a local SigWeb, you must run a local
-						HTTPS host on <code>https://localhost:9443</code> (the bridge). It serves the demo over HTTPS and proxies SigWeb.
-						<ul>
-							<li>Install Node.js (so <code>npm</code> works).</li>
-							<li><code>npm install</code> (repo root)</li>
-							<li><code>npm run demo:https</code> (build + start <code>https://localhost:9443</code>)</li>
-							<li>Open <code>https://localhost:9443/</code> once and approve the certificate warning.</li>
-						</ul>
-						If the user does not have this project folder, they must download and run the bridge executable instead:
-						<ul>
-							<li><a href="https://github.com/SergKredo/topaz-demo/releases" target="_blank" rel="noopener noreferrer">Download Topaz Demo Bridge (EXE) from GitHub Releases</a></li>
-							<li>Run the EXE (starts <code>https://localhost:9443</code>), then open <code>https://localhost:9443/</code> once to approve the certificate.</li>
-						</ul>
-						If Chrome shows <code>ERR_CERT_AUTHORITY_INVALID</code>, this is expected with a self-signed cert. To remove the warning, create a locally trusted cert
-						(e.g. via <a href="https://github.com/FiloSottile/mkcert" target="_blank" rel="noopener noreferrer">mkcert</a>) and place it in <code>bridge/certs</code>
-						(see <a href="https://github.com/SergKredo/topaz-demo/tree/main/bridge" target="_blank" rel="noopener noreferrer">bridge/README.md</a>).
-						Bridge details (source + troubleshooting):
-						<a href="https://github.com/SergKredo/topaz-demo/tree/main/bridge" target="_blank" rel="noopener noreferrer">bridge/README.md</a>
-						Then the deployed site will call <code>https://localhost:9443/sigweb</code> (bridge) → <code>http://localhost:47289/sigweb</code> (SigWeb).
-					</li>
-					<li>
-						If you run the demo locally over HTTP (<code>http://localhost:4200</code>), you do not need the bridge.
-						Start it with: <code>npm start</code>.
-					</li>
-					<li>WebSocket is not used here: the SigWeb host exposes HTTP/WCF REST endpoints, not WebSocket upgrade.</li>
-				</ul>
-			</div>
-		</div>
-
-		<div class="divider"></div>
-
 		<div class="stack">
 			<div class="kv"><b>Base URL:</b> <code>{{ topaz.baseUrl }}</code></div>
 			<div>
