@@ -6,14 +6,14 @@
 	<div class="grid">
 		<section class="card">
 			<h2 class="card-title">Status</h2>
-			<div class="kv">SigWeb version: <span class="mono">{{ topaz.version() ?? '—' }}</span></div>
+			<div class="kv" title="SigWeb service version (verifies the SDK/service is reachable).">SigWeb version: <span class="mono">{{ topaz.version() ?? '—' }}</span></div>
 			<div class="kv">
 				Tablet connected:
-				<span class="mono">{{ topaz.tabletConnected() === null ? '—' : (topaz.tabletConnected() ? 'Yes' : 'No') }}</span>
+				<span class="mono" title="Whether SigWeb currently detects a signature tablet (must be Yes to capture).">{{ topaz.tabletConnected() === null ? '—' : (topaz.tabletConnected() ? 'Yes' : 'No') }}</span>
 			</div>
 			<div class="kv" *ngIf="topaz.lastAction()">Last action: <span class="mono">{{ topaz.lastAction() }}</span></div>
 			<div class="kv prewrap" *ngIf="topaz.lastError()">Error: <span class="mono">{{ topaz.lastError() }}</span></div>
-			<div class="hint">
+			<div class="hint" title="Typical flow: Start → sign on the tablet → Save to fetch image.">
 				Steps: 1) Click Start 2) Sign on the tablet 3) Click Save to show image.
 			</div>
 		</section>
@@ -21,11 +21,11 @@
 		<section class="card">
 			<h2 class="card-title">Capture</h2>
 			<div class="actions">
-				<button class="btn btn-primary" type="button" (click)="start()">Start</button>
-				<button class="btn" type="button" (click)="stop()">Stop</button>
-				<button class="btn" type="button" (click)="closeTablet()">Close</button>
-				<button class="btn" type="button" (click)="clear()">Clear</button>
-				<button class="btn" type="button" (click)="save()">Save</button>
+				<button class="btn btn-primary" type="button" (click)="start()" title="Start signature capture (SDK opens tablet and enables capture mode).">Start</button>
+				<button class="btn" type="button" (click)="stop()" title="Stop signature capture (turn capture OFF, without necessarily closing the tablet session).">Stop</button>
+				<button class="btn" type="button" (click)="closeTablet()" title="Close the tablet/session in SigWeb. Useful after finishing or to reset the device state.">Close</button>
+				<button class="btn" type="button" (click)="clear()" title="Clear the current signature buffer (start over).">Clear</button>
+				<button class="btn" type="button" (click)="save()" title="Fetch signature image from SigWeb and display it below.">Save</button>
 			</div>
 			<div class="signature-preview">
 				<img *ngIf="signatureImage" [src]="signatureImage" />
@@ -36,19 +36,19 @@
 	<section class="card">
 		<h2 class="card-title">SDK Tools</h2>
 		<div class="actions">
-			<button class="btn" type="button" (click)="refreshDeviceInfo()">Refresh device info</button>
-			<button class="btn" type="button" (click)="refreshStats()">Refresh stats</button>
-			<button class="btn" type="button" (click)="exportSigString()">Export SigString</button>
-			<button class="btn" type="button" (click)="importSigString()">Import SigString</button>
+			<button class="btn" type="button" (click)="refreshDeviceInfo()" title="Read model/serial/firmware from SigWeb for diagnostics.">Refresh device info</button>
+			<button class="btn" type="button" (click)="refreshStats()" title="Refresh capture statistics: total points and stroke count.">Refresh stats</button>
+			<button class="btn" type="button" (click)="exportSigString()" title="Export the signature as a text string (SigString) so it can be stored or transferred.">Export SigString</button>
+			<button class="btn" type="button" (click)="importSigString()" title="Import a SigString from the text area back into SigWeb (restores the signature).">Import SigString</button>
 		</div>
 
 		<div class="stack">
-			<div class="kv">Capture state: <span class="mono">{{ topaz.tabletCaptureOn() === null ? '—' : (topaz.tabletCaptureOn() ? 'ON' : 'OFF') }}</span></div>
-			<div class="kv">Model: <span class="mono">{{ topaz.tabletModelNumber() ?? '—' }}</span></div>
-			<div class="kv">Serial: <span class="mono">{{ topaz.tabletSerialNumber() ?? '—' }}</span></div>
-			<div class="kv">Firmware: <span class="mono">{{ topaz.firmwareRevision() ?? '—' }}</span></div>
-			<div class="kv">Total points: <span class="mono">{{ topaz.totalPoints() ?? '—' }}</span></div>
-			<div class="kv">Strokes: <span class="mono">{{ topaz.numberOfStrokes() ?? '—' }}</span></div>
+			<div class="kv" title="Whether capture mode is currently enabled in SigWeb.">Capture state: <span class="mono">{{ topaz.tabletCaptureOn() === null ? '—' : (topaz.tabletCaptureOn() ? 'ON' : 'OFF') }}</span></div>
+			<div class="kv" title="Tablet model number (if reported by the connected device).">Model: <span class="mono">{{ topaz.tabletModelNumber() ?? '—' }}</span></div>
+			<div class="kv" title="Tablet serial number (if reported by the connected device).">Serial: <span class="mono">{{ topaz.tabletSerialNumber() ?? '—' }}</span></div>
+			<div class="kv" title="Firmware revision (if reported by the connected device).">Firmware: <span class="mono">{{ topaz.firmwareRevision() ?? '—' }}</span></div>
+			<div class="kv" title="Total captured points in the current signature buffer.">Total points: <span class="mono">{{ topaz.totalPoints() ?? '—' }}</span></div>
+			<div class="kv" title="Number of strokes (separate pen-down segments) in the current signature.">Strokes: <span class="mono">{{ topaz.numberOfStrokes() ?? '—' }}</span></div>
 		</div>
 
 		<div class="divider"></div>
@@ -58,6 +58,7 @@
 			class="mono"
 			rows="5"
 			style="width: 100%;"
+			title="SigString is a text representation of the signature. Export fills this field; Import loads it back into SigWeb."
 			[value]="sigStringDraft"
 			(input)="sigStringDraft = $any($event.target).value"
 		></textarea>
