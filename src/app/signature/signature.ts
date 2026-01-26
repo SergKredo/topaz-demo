@@ -53,6 +53,7 @@ type RawApiGroup = {
 })
 export class SignatureComponent implements OnInit {
   signatureImage?: string;
+  sigStringDraft = '';
 
   expandedApiId: string | null = null;
   expandedRawApiKey: string | null = null;
@@ -464,6 +465,7 @@ export class SignatureComponent implements OnInit {
 
   ngOnInit() {
     this.topaz.refreshStatus();
+    this.topaz.refreshDeviceInfo();
   }
 
   toggleApiDetails(id: string) {
@@ -802,6 +804,16 @@ export class SignatureComponent implements OnInit {
     this.topaz.startCapture();
   }
 
+  stop() {
+    this.ensureConnected();
+    this.topaz.stopCapture();
+  }
+
+  closeTablet() {
+    this.ensureConnected();
+    this.topaz.closeTablet();
+  }
+
   clear() {
     this.ensureConnected();
     this.signatureImage = undefined;
@@ -811,5 +823,31 @@ export class SignatureComponent implements OnInit {
   save() {
     this.ensureConnected();
     this.topaz.getImage();
+  }
+
+  refreshDeviceInfo() {
+    this.topaz.refreshDeviceInfo();
+    this.topaz.refreshStatus();
+  }
+
+  refreshStats() {
+    this.topaz.refreshSignatureStats();
+    this.topaz.refreshStatus();
+  }
+
+  exportSigString() {
+    const value = this.topaz.exportSigString();
+    if (value) {
+      this.sigStringDraft = value;
+    }
+  }
+
+  importSigString() {
+    const trimmed = this.sigStringDraft.trim();
+    if (!trimmed) {
+      this.topaz.lastError.set('SigString is empty. Paste a value first.');
+      return;
+    }
+    this.topaz.importSigString(trimmed);
   }
 }

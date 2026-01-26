@@ -22,6 +22,8 @@
 			<h2 class="card-title">Capture</h2>
 			<div class="actions">
 				<button class="btn btn-primary" type="button" (click)="start()">Start</button>
+				<button class="btn" type="button" (click)="stop()">Stop</button>
+				<button class="btn" type="button" (click)="closeTablet()">Close</button>
 				<button class="btn" type="button" (click)="clear()">Clear</button>
 				<button class="btn" type="button" (click)="save()">Save</button>
 			</div>
@@ -30,6 +32,39 @@
 			</div>
 		</section>
 	</div>
+
+	<section class="card">
+		<h2 class="card-title">SDK Tools</h2>
+		<div class="actions">
+			<button class="btn" type="button" (click)="refreshDeviceInfo()">Refresh device info</button>
+			<button class="btn" type="button" (click)="refreshStats()">Refresh stats</button>
+			<button class="btn" type="button" (click)="exportSigString()">Export SigString</button>
+			<button class="btn" type="button" (click)="importSigString()">Import SigString</button>
+		</div>
+
+		<div class="stack">
+			<div class="kv">Capture state: <span class="mono">{{ topaz.tabletCaptureOn() === null ? '—' : (topaz.tabletCaptureOn() ? 'ON' : 'OFF') }}</span></div>
+			<div class="kv">Model: <span class="mono">{{ topaz.tabletModelNumber() ?? '—' }}</span></div>
+			<div class="kv">Serial: <span class="mono">{{ topaz.tabletSerialNumber() ?? '—' }}</span></div>
+			<div class="kv">Firmware: <span class="mono">{{ topaz.firmwareRevision() ?? '—' }}</span></div>
+			<div class="kv">Total points: <span class="mono">{{ topaz.totalPoints() ?? '—' }}</span></div>
+			<div class="kv">Strokes: <span class="mono">{{ topaz.numberOfStrokes() ?? '—' }}</span></div>
+		</div>
+
+		<div class="divider"></div>
+
+		<div class="kv"><b>SigString:</b></div>
+		<textarea
+			class="mono"
+			rows="5"
+			style="width: 100%;"
+			[value]="sigStringDraft"
+			(input)="sigStringDraft = $any($event.target).value"
+		></textarea>
+		<div class="hint">
+			Use Export to fill the text area. Use Import to load the text back into SigWeb.
+		</div>
+	</section>
 
 	<section class="card">
 		<h2 class="card-title">SigWeb REST API (reference)</h2>
@@ -41,8 +76,8 @@
 			</div>
 			<div>
 				<b>HTTP rules:</b>
-				most “read” endpoints are <code>GET</code>; many “command” endpoints require <code>POST</code> and a non-empty
-				body (so the request has <code>Content-Length</code>, e.g. <code>x=</code>).
+				Supported approach is via <code>sigwebtablet.js</code> / <code>SigWebTablet</code>.
+				Direct <code>POST</code> calls to command endpoints may fail depending on SigWeb version and browser/CORS behavior.
 			</div>
 			<div>
 				<b>Important:</b>
