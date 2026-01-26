@@ -4,6 +4,7 @@ declare global {
   type MaybePromise<T> = T | Promise<T>;
 
   interface SigWebTabletApi {
+    isSigWebInstalled?: () => MaybePromise<boolean>;
     openTablet?: () => MaybePromise<unknown>;
     startSignature?: () => MaybePromise<unknown>;
     stopSignature?: () => MaybePromise<unknown>;

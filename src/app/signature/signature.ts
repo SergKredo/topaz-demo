@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, OnInit, isDevMode } from '@angular/core';
+import { Component, OnDestroy, OnInit, isDevMode } from '@angular/core';
 import { TopazService } from '../services/topaz';
 
 type HttpMethod = 'GET' | 'POST' | '(varies)';
@@ -51,9 +51,12 @@ type RawApiGroup = {
   templateUrl: './signature.html',
   styleUrl: './signature.css'
 })
-export class SignatureComponent implements OnInit {
+export class SignatureComponent implements OnInit, OnDestroy {
   signatureImage?: string;
   sigStringDraft = '';
+
+  autoRefreshEnabled = true;
+  private autoRefreshId: number | null = null;
 
   readonly showInternalApiReference = isDevMode();
 
@@ -468,6 +471,31 @@ export class SignatureComponent implements OnInit {
   ngOnInit() {
     this.topaz.refreshStatus();
     this.topaz.refreshDeviceInfo();
+    this.topaz.refreshSignatureStats();
+    this.setAutoRefresh(true);
+  }
+
+  ngOnDestroy() {
+    this.setAutoRefresh(false);
+  }
+
+  setAutoRefresh(enabled: boolean) {
+    this.autoRefreshEnabled = enabled;
+
+    if (!enabled) {
+      if (this.autoRefreshId !== null) {
+        clearInterval(this.autoRefreshId);
+        this.autoRefreshId = null;
+      }
+      return;
+    }
+
+    if (this.autoRefreshId !== null) return;
+
+    this.autoRefreshId = window.setInterval(() => {
+      this.topaz.refreshStatus();
+      this.topaz.refreshSignatureStats();
+    }, 1500);
   }
 
   toggleApiDetails(id: string) {
@@ -851,5 +879,89 @@ export class SignatureComponent implements OnInit {
       return;
     }
     this.topaz.importSigString(trimmed);
+  }
+
+  clearLog() {
+    this.topaz.clearEventLog();
+  }
+
+  async copySigString() {
+    const value = this.sigStringDraft.trim();
+    if (!value) {
+      this.topaz.lastError.set('SigString is empty. Export first, or paste a value.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (err) {
+      this.topaz.lastError.set(`Copy to clipboard failed: ${String(err)}`);
+    }
+  }
+
+  downloadSigString() {
+    const value = this.sigStringDraft.trim();
+    if (!value) {
+      this.topaz.lastError.set('SigString is empty. Export first, or paste a value.');
+      return;
+    }
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.downloadText(`sigstring-${stamp}.txt`, value);
+  }
+
+  downloadImage() {
+    if (!this.signatureImage) {
+      this.topaz.lastError.set('No image to download yet. Click Save first.');
+      return;
+    }
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.downloadDataUrl(`signature-${stamp}.png`, this.signatureImage);
+  }
+
+  async copyImage() {
+    if (!this.signatureImage) {
+      this.topaz.lastError.set('No image to copy yet. Click Save first.');
+      return;
+    }
+
+    try {
+      const blob = await this.dataUrlToBlob(this.signatureImage);
+      const ClipboardItemCtor = (globalThis as any).ClipboardItem;
+      if (!ClipboardItemCtor || !navigator.clipboard?.write) {
+        throw new Error('Clipboard image copy is not supported in this browser.');
+      }
+
+      await navigator.clipboard.write([
+        new ClipboardItemCtor({ 'image/png': blob })
+      ]);
+    } catch (err) {
+      this.topaz.lastError.set(`Copy image failed: ${String(err)}`);
+    }
+  }
+
+  private downloadText(filename: string, text: string) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  private downloadDataUrl(filename: string, dataUrl: string) {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    a.click();
+  }
+
+  private async dataUrlToBlob(dataUrl: string) {
+    const res = await fetch(dataUrl);
+    return await res.blob();
   }
 }

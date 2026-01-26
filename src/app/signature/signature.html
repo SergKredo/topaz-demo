@@ -6,11 +6,50 @@
 	<div class="grid">
 		<section class="card">
 			<h2 class="card-title">Status</h2>
+			<div class="badges">
+				<span
+					class="badge"
+					[class.badge-ok]="topaz.sdkLoaded()"
+					[class.badge-error]="!topaz.sdkLoaded()"
+					title="Whether the SigWebTablet JS SDK was loaded into the page."
+				>
+					SDK: {{ topaz.sdkLoaded() ? 'Loaded' : 'Missing' }}
+				</span>
+				<span
+					class="badge"
+					[class.badge-ok]="topaz.sigwebInstalled() === true"
+					[class.badge-error]="topaz.sigwebInstalled() === false"
+					[class.badge-warn]="topaz.sigwebInstalled() === null"
+					title="Best-effort check for whether SigWeb is installed on this machine."
+				>
+					SigWeb: {{ topaz.sigwebInstalled() === null ? 'Unknown' : (topaz.sigwebInstalled() ? 'Installed' : 'Not detected') }}
+				</span>
+				<span
+					class="badge"
+					[class.badge-warn]="topaz.isGitHubPages()"
+					title="If you're on GitHub Pages, SigWeb must still be installed and running locally on your PC."
+				>
+					Host: {{ topaz.isGitHubPages() ? 'GitHub Pages' : 'Local' }}
+				</span>
+				<span
+					class="badge"
+					[class.badge-ok]="topaz.tabletConnected() === true"
+					[class.badge-error]="topaz.tabletConnected() === false"
+					[class.badge-warn]="topaz.tabletConnected() === null"
+					title="Whether SigWeb currently detects a tablet."
+				>
+					Tablet: {{ topaz.tabletConnected() === null ? 'Unknown' : (topaz.tabletConnected() ? 'Connected' : 'Not found') }}
+				</span>
+			</div>
 			<div class="kv" title="SigWeb service version (verifies the SDK/service is reachable).">SigWeb version: <span class="mono">{{ topaz.version() ?? '—' }}</span></div>
 			<div class="kv">
 				Tablet connected:
 				<span class="mono" title="Whether SigWeb currently detects a signature tablet (must be Yes to capture).">{{ topaz.tabletConnected() === null ? '—' : (topaz.tabletConnected() ? 'Yes' : 'No') }}</span>
 			</div>
+			<label class="kv" title="When enabled, the page periodically refreshes status/stats.">
+				<input type="checkbox" [checked]="autoRefreshEnabled" (change)="setAutoRefresh($any($event.target).checked)" />
+				Auto-refresh
+			</label>
 			<div class="kv" *ngIf="topaz.lastAction()">Last action: <span class="mono">{{ topaz.lastAction() }}</span></div>
 			<div class="kv prewrap" *ngIf="topaz.lastError()">Error: <span class="mono">{{ topaz.lastError() }}</span></div>
 			<div class="hint" title="Typical flow: Start → sign on the tablet → Save to fetch image.">
@@ -25,7 +64,9 @@
 				<button class="btn" type="button" (click)="stop()" title="Stop signature capture (turn capture OFF, without necessarily closing the tablet session).">Stop</button>
 				<button class="btn" type="button" (click)="closeTablet()" title="Close the tablet/session in SigWeb. Useful after finishing or to reset the device state.">Close</button>
 				<button class="btn" type="button" (click)="clear()" title="Clear the current signature buffer (start over).">Clear</button>
-				<button class="btn" type="button" (click)="save()" title="Fetch signature image from SigWeb and display it below.">Save</button>
+				<button class="btn" type="button" (click)="save()" [disabled]="!topaz.hasSignature()" title="Fetch signature image from SigWeb and display it below.">Save</button>
+				<button class="btn" type="button" (click)="downloadImage()" [disabled]="!signatureImage" title="Download the currently displayed signature image as PNG.">Download PNG</button>
+				<button class="btn" type="button" (click)="copyImage()" [disabled]="!signatureImage" title="Copy the currently displayed signature image to the clipboard (browser support varies).">Copy PNG</button>
 			</div>
 			<div class="signature-preview">
 				<img *ngIf="signatureImage" [src]="signatureImage" />
@@ -40,6 +81,8 @@
 			<button class="btn" type="button" (click)="refreshStats()" title="Refresh capture statistics: total points and stroke count.">Refresh stats</button>
 			<button class="btn" type="button" (click)="exportSigString()" title="Export the signature as a text string (SigString) so it can be stored or transferred.">Export SigString</button>
 			<button class="btn" type="button" (click)="importSigString()" title="Import a SigString from the text area back into SigWeb (restores the signature).">Import SigString</button>
+			<button class="btn" type="button" (click)="copySigString()" title="Copy the SigString in the text area to clipboard.">Copy SigString</button>
+			<button class="btn" type="button" (click)="downloadSigString()" title="Download the SigString in the text area as a .txt file.">Download SigString</button>
 		</div>
 
 		<div class="stack">
@@ -65,6 +108,50 @@
 		<div class="hint">
 			Use Export to fill the text area. Use Import to load the text back into SigWeb.
 		</div>
+	</section>
+
+	<section class="card">
+		<h2 class="card-title">Diagnostics</h2>
+		<div class="actions">
+			<button class="btn" type="button" (click)="clearLog()" title="Clear the on-page event log.">Clear log</button>
+		</div>
+
+		<div class="log" *ngIf="topaz.eventLog().length > 0; else emptyLog">
+			<div
+				class="log-item"
+				*ngFor="let item of topaz.eventLog()"
+				[class.log-info]="item.level === 'info'"
+				[class.log-warn]="item.level === 'warn'"
+				[class.log-error]="item.level === 'error'"
+			>
+				<span class="log-ts mono">{{ item.ts }}</span>
+				<span class="log-level mono">{{ item.level }}</span>
+				<span class="log-msg">{{ item.message }}</span>
+			</div>
+		</div>
+		<ng-template #emptyLog>
+			<div class="hint">No events yet. Actions will appear here.</div>
+		</ng-template>
+
+		<div class="divider"></div>
+
+		<details class="troubleshoot">
+			<summary class="btn" title="Quick troubleshooting tips for common setup issues.">Troubleshoot</summary>
+			<div class="stack" style="margin-top: 0.75rem;">
+				<div>
+					<b>If SDK is Missing:</b> make sure <span class="mono">SigWebTablet.js</span> loads (no 404 in DevTools → Network).
+				</div>
+				<div>
+					<b>If SigWeb is Not detected:</b> install and start Topaz SigWeb (SigPlusNET). Then reload the page.
+				</div>
+				<div>
+					<b>If Tablet is Not found:</b> connect the device, check drivers, and open the SigWeb app to confirm it detects the tablet.
+				</div>
+				<div *ngIf="topaz.isGitHubPages()">
+					<b>GitHub Pages note:</b> the website is hosted remotely, but SigWeb still runs locally on your PC.
+				</div>
+			</div>
+		</details>
 	</section>
 
 	<section class="card" *ngIf="showInternalApiReference">

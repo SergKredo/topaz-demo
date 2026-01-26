@@ -16,6 +16,18 @@
   }
 
   window.SigWebTablet = {
+    isSigWebInstalled: function () {
+      var IsSigWebInstalled = assertFn('IsSigWebInstalled');
+      var value = IsSigWebInstalled();
+      if (typeof value === 'string') {
+        value = value.trim();
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+      }
+      return value === true || value === 1 || value === '1' || value === 'true' || value === 'TRUE';
+    },
+
     openTablet: function () {
       // Default mode 0 (as in docs /OpenTablet/0)
       var OpenTablet = assertFn('OpenTablet');
