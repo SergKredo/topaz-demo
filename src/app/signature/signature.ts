@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, isDevMode } from '@angular/core';
 import { TopazService } from '../services/topaz';
 
 type HttpMethod = 'GET' | 'POST' | '(varies)';
@@ -54,6 +54,8 @@ type RawApiGroup = {
 export class SignatureComponent implements OnInit {
   signatureImage?: string;
   sigStringDraft = '';
+
+  readonly showInternalApiReference = isDevMode();
 
   expandedApiId: string | null = null;
   expandedRawApiKey: string | null = null;

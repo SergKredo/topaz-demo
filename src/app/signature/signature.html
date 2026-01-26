@@ -66,8 +66,8 @@
 		</div>
 	</section>
 
-	<section class="card">
-		<h2 class="card-title">SigWeb REST API (reference)</h2>
+	<section class="card" *ngIf="showInternalApiReference">
+		<h2 class="card-title">SigWeb REST API (internal reference)</h2>
 		<div class="stack">
 			<div class="kv"><b>Base URL:</b> <code>{{ topaz.baseUrl }}</code></div>
 			<div>
@@ -78,6 +78,10 @@
 				<b>HTTP rules:</b>
 				Supported approach is via <code>sigwebtablet.js</code> / <code>SigWebTablet</code>.
 				Direct <code>POST</code> calls to command endpoints may fail depending on SigWeb version and browser/CORS behavior.
+			</div>
+			<div>
+				<b>Note:</b> the SDK is essentially a wrapper around these endpoints.
+				You normally do not call them directly from Angular.
 			</div>
 			<div>
 				<b>Important:</b>
